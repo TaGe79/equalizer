@@ -6,8 +6,6 @@
 
 #include "color.h"
 
-#define TEMP_SENSOR  0
-
 /////////////////////
 // Hardware Hookup //
 /////////////////////
@@ -45,9 +43,7 @@ void setup() {
   Serial.begin(115200);
   
   pinMode(A6,INPUT);
- // pinMode(A4,INPUT);
   digitalWrite(A6,LOW);
-//  digitalWrite(A4,LOW);
   
   pinMode(res, OUTPUT); // reset
   pinMode(strobe, OUTPUT); // strobe
@@ -76,12 +72,15 @@ void loop() {
     drawBar(leftPos, equHigh[boundIdx(left[band])], bcs[band]);
     drawBar(rightPos, equHigh[boundIdx(right[band])], bcs[6-band]);
   }
-  
-//  testPrintBands();
+
+#ifdef SERIAL_TEST  
+  testPrintBands();
+#endif
 
   delay(50);
 }
 
+#ifdef SERIAL_TEST
 void testPrintBands() {
  // display values of left channel on serial monitor
  for (band = 0; band < 7; band++)
@@ -100,7 +99,9 @@ void testPrintBands() {
  }
  Serial.println();
 }
+#endif
 
+#ifdef SIMULATE
 int last_left[] = {4,4,4,4,4,4,4,4,4};
 int last_right[] = {4,4,4,4,4,4,4,4,4};
 void simulateMSGEQ7() {
@@ -116,6 +117,7 @@ void simulateMSGEQ7() {
   }
   delay(200);
 }
+#endif
 
 void readMSGEQ7()
 // Function to read 7 band equalizers
