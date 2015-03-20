@@ -6,7 +6,7 @@
 
 #include "color.h"
 
-#define TEMP_SENSOR  1
+#define TEMP_SENSOR  0
 
 /////////////////////
 // Hardware Hookup //
@@ -31,9 +31,10 @@ int8_t cursorY = 0;  // Cursor y position, initialize top
 
 const int res = 8;
 const int strobe = 12;
-const int bandValues[]  = {895, 767, 639, 511, 383, 255, 127, 1, 0};
-const int equHigh[]     = {15  , 13  , 11  , 9  , 7  , 5 , 3 , 1, 0};
-const TColor bcs[]      = {TColor(0xff0000), TColor(0xffa000), TColor(0x00ff00), TColor(0xff00ff), TColor(0x0000ff), TColor(0xffff00), TColor(0xffffff)};
+const int bandValues[]  = {895, 767, 639, 511, 383, 255, 127, 80, 40};
+const int equHigh[]     = {16 , 13 , 11 , 9  , 7  , 5  , 3  , 1 , 0};
+//const TColor bcs[]      = {TColor(0xff0000), TColor(0xffa000), TColor(0x00ff00), TColor(0xff00ff), TColor(0x0000ff), TColor(0xffff00), TColor(0xffffff)};
+const TColor bcs[]      = {TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00)};
   
 int left[7]; // store band values in these arrays
 int right[7];
@@ -59,14 +60,7 @@ void setup() {
 }
 
 int i;
-void loop() {
-//  matrix.drawLine(0,0,32,0, matrix.Color333(255,0,0));
-
-  for ( band = 0; band < 7; band++) {
-    left[band] = rand()*500;
-    right[band] = rand()*500; 
-  } 
-  
+void loop() { 
 #ifdef SIMULATE  
   simulateMSGEQ7();
 #else
@@ -83,9 +77,9 @@ void loop() {
     drawBar(rightPos, equHigh[boundIdx(right[band])], bcs[6-band]);
   }
   
-  testPrintBands();
+//  testPrintBands();
 
-  delay(100);
+  delay(50);
 }
 
 void testPrintBands() {
@@ -128,15 +122,18 @@ void readMSGEQ7()
 {
  digitalWrite(res, HIGH);
  digitalWrite(res, LOW);
+ delayMicroseconds(75);
+ 
  for(band=0; band <7; band++)
  {
    digitalWrite(strobe,LOW); // strobe pin on the shield - kicks the IC up to the next band 
-   delayMicroseconds(30); // 
+   delayMicroseconds(45); // 
  
    left[band] = analogRead(A6); // store left band reading
-   right[band] = left[band]; //analogRead(A4); // ... and the right
-
+   right[6-band] = left[band]; //analogRead(A4); // ... and the right
+  
    digitalWrite(strobe,HIGH); 
+   delayMicroseconds(45);
  }
 }
 
@@ -159,10 +156,20 @@ void drawBar(int barIdx, int height, const TColor& color) {
 void drawBar(int barIdx,int height, uint8_t r, uint8_t g, uint8_t b) {
   if ( barIdx > 15 || barIdx < 0 || height > 16) return;
   
+  int r_y = 8;
   int x = barIdx*2;
   int y = matrix.height();
+  int dh = height;
+  
+  int gh = min(height,r_y);
+  int rh = max(0, dh-r_y);
+   
   int w = 1;
   
-  matrix.fillRect(x,0,w,y-height,matrix.Color444(0,0,0));
-  matrix.fillRect(x,y-height,w,y,matrix.Color444(r,g,b));
+  matrix.fillRect(x,0,w,y,matrix.Color444(0,0,0));
+  
+  if ( gh == 0 ) return;
+//  matrix.fillRect(x,y-height,w,y,matrix.Color444(r,g,b));
+  matrix.fillRect(x,0,w,gh,matrix.Color444(r,g,b));
+  if ( rh > 0 ) matrix.fillRect(x,gh,w,rh,matrix.Color444(255,0,0));
 }
