@@ -159,6 +159,16 @@ void blankEasel()
 void drawBar(int barIdx, int height, const TColor& color) {
   drawBar(barIdx,height,color.red,color.green,color.blue); 
 }
+
+#define GREEN_HIGH     4
+#define YELLOW_HIGH    7
+#define ORANGE_HIGH    10
+#define COLOR_SEGMENTS 4
+#define BAR_WIDTH      2
+
+//const TColor segmentColors[] = {TColor(0x00ff00),TColor(0xfff705),TColor(0xffb405), TColor(0xff0000)};
+const TColor segmentColors[] = {TColor(0x00ff00),TColor(0xffff00),TColor(0xff7700), TColor(0xff0000)};
+
 void drawBar(int barIdx,int height, uint8_t r, uint8_t g, uint8_t b) {
   if ( barIdx > 15 || barIdx < 0 || height > 16) return;
   
@@ -167,15 +177,21 @@ void drawBar(int barIdx,int height, uint8_t r, uint8_t g, uint8_t b) {
   int y = matrix.height();
   int dh = height;
   
-  int gh = min(height,r_y);
-  int rh = max(0, dh-r_y);
-   
-  int w = 1;
+  matrix.fillRect(x,0,BAR_WIDTH,y,matrix.Color444(0,0,0));
   
-  matrix.fillRect(x,0,w,y,matrix.Color444(0,0,0));
+  int segments[] = { min(height,GREEN_HIGH), 
+                     min(max(0, dh-GREEN_HIGH), (YELLOW_HIGH-GREEN_HIGH)), 
+                     min(max(0, dh-YELLOW_HIGH),(ORANGE_HIGH-YELLOW_HIGH)), 
+                     min(max(0, dh-ORANGE_HIGH),(EQU_HIGH-ORANGE_HIGH))};
+  int start = 0;
+  for ( int k=0; k<COLOR_SEGMENTS && segments[k]>0; k++ ) {
+    TColor c = segmentColors[k];
+    matrix.fillRect(x,start,BAR_WIDTH,segments[k],matrix.Color444(c.red,c.green,c.blue));
+    start += segments[k];
+  }
   
-  if ( gh == 0 ) return;
+//  if ( gh == 0 ) return;
 //  matrix.fillRect(x,y-height,w,y,matrix.Color444(r,g,b));
-  matrix.fillRect(x,0,w,gh,matrix.Color444(r,g,b));
-  if ( rh > 0 ) matrix.fillRect(x,gh,w,rh,matrix.Color444(255,0,0));
+//  matrix.fillRect(x,0,BAR_WIDTH,gh,matrix.Color444(r,g,b));
+//  if ( rh > 0 ) matrix.fillRect(x,gh,BAR_WIDTH,rh,matrix.Color444(255,0,0));
 }
