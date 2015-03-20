@@ -29,8 +29,11 @@ int8_t cursorY = 0;  // Cursor y position, initialize top
 
 const int res = 8;
 const int strobe = 12;
-const int bandValues[]  = {895, 767, 639, 511, 383, 255, 127, 80, 40};
-const int equHigh[]     = {16 , 13 , 11 , 9  , 7  , 5  , 3  , 1 , 0};
+
+#define EQU_HIGH 16
+//const int bandValues[]  = {895, 767, 639, 511, 383, 255, 127, 80, 60, 40, 20};
+const int bandValues[]  = {895, 820, 767, 720, 639, 590, 511, 470, 383, 330, 255, 190, 127, 100, 80, 50};
+//const int equHigh[]     = {16 , 13 , 11 , 9  , 7  , 5  , 3  , 1 , 0};
 //const TColor bcs[]      = {TColor(0xff0000), TColor(0xffa000), TColor(0x00ff00), TColor(0xff00ff), TColor(0x0000ff), TColor(0xffff00), TColor(0xffffff)};
 const TColor bcs[]      = {TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00), TColor(0x00ff00)};
   
@@ -69,8 +72,8 @@ void loop() {
   for ( band = 0; band<7; band++ ) {
     leftPos = band;
     rightPos = 9 + band;
-    drawBar(leftPos, equHigh[boundIdx(left[band])], bcs[band]);
-    drawBar(rightPos, equHigh[boundIdx(right[band])], bcs[6-band]);
+    drawBar(leftPos, equValue(left[band]), bcs[band]);
+    drawBar(rightPos, equValue(right[band]), bcs[6-band]);
   }
 
 #ifdef SERIAL_TEST  
@@ -86,7 +89,7 @@ void testPrintBands() {
  for (band = 0; band < 7; band++)
  {
  Serial.print(left[band]);
- Serial.print("/"); Serial.print(equHigh[boundIdx(left[band])]);
+ Serial.print("/"); Serial.print(equValue(left[band]));
  Serial.print(" ");
  }
  Serial.print("\t");
@@ -94,7 +97,7 @@ void testPrintBands() {
  for (band = 0; band < 7; band++)
  {
  Serial.print(right[band]);
- Serial.print("/"); Serial.print(equHigh[boundIdx(right[band])]);
+ Serial.print("/"); Serial.print(equValue(right[band]));
  Serial.print(" ");
  }
  Serial.println();
@@ -139,10 +142,11 @@ void readMSGEQ7()
  }
 }
 
-int boundIdx(int bandLevel) {
+// Convert band level to a discrete display value
+int equValue(int bandLevel) {
   int i=0;
-  for ( ; i < 9 && bandLevel < bandValues[i]; i++ ) ;
-  return i;
+  for ( ; i < EQU_HIGH && bandLevel < bandValues[i]; i++ ) ;
+  return EQU_HIGH - i;
 }
 
 void blankEasel()
